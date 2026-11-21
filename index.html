@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Precios del kiosco</title>
+<style>
+:root{--bg:#F3F6FA;--card:#fff;--ink:#10243E;--mut:#4A5B73;--line:#C9D4E3;--pri:#0B57C8;--onpri:#fff;--ok:#12703A;--bad:#B3261E;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0E1726;--card:#17233A;--ink:#EEF3FA;--mut:#A9B8CF;--line:#2B3C58;--pri:#5C9BFF;--onpri:#06152E;--ok:#4CC37E;--bad:#FF8A80;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0E1726;--card:#17233A;--ink:#EEF3FA;--mut:#A9B8CF;--line:#2B3C58;--pri:#5C9BFF;--onpri:#06152E;--ok:#4CC37E;--bad:#FF8A80;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:22px/1.3 system-ui,"Segoe UI",Roboto,sans-serif;padding-bottom:190px}
+main{max-width:640px;margin:0 auto;padding:14px}
+button{font:inherit;cursor:pointer;border-radius:16px;min-height:60px;padding:0 18px;background:var(--card);color:var(--ink);border:2px solid var(--line)}
+button:disabled{opacity:.45}
+:focus-visible{outline:4px solid var(--pri);outline-offset:2px}
+#mic{width:100%;min-height:110px;font-size:30px;font-weight:700;background:var(--pri);color:var(--onpri);border:0}
+#mic.on{background:var(--bad);color:#fff}
+input,textarea{font:inherit;width:100%;min-height:60px;border-radius:14px;border:2px solid var(--line);padding:0 14px;background:var(--card);color:var(--ink);margin:12px 0}
+textarea{padding:10px 14px;min-height:100px;font-size:16px}
+.card{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;margin:8px 0;min-height:76px;gap:10px}
+.card b{font-size:32px;white-space:nowrap}
+.row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.row>span:first-child{flex:1}
+h2{font-size:24px;margin:22px 0 6px}
+.mut{color:var(--mut);font-size:18px}
+.bad{color:var(--bad)}
+#heard{min-height:26px;margin-top:10px;color:var(--mut);font-size:18px}
+#bar{position:fixed;left:0;right:0;bottom:calc(72px + env(safe-area-inset-bottom,0px));background:var(--card);border-top:2px solid var(--line);padding:10px 14px;display:flex;align-items:center;gap:12px;justify-content:space-between}
+#bar small{display:block;font-size:16px;color:var(--mut)}
+#bar b{font-size:36px}
+.ok{background:var(--ok);color:#fff;border:0;font-weight:700;min-height:64px}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:2px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav button{flex:1;border:0;border-radius:0;min-height:72px;font-weight:700;background:none}
+nav button.on{background:var(--pri);color:var(--onpri)}
+#toast{position:fixed;left:14px;right:14px;top:calc(12px + env(safe-area-inset-top,0px));background:var(--ok);color:#fff;padding:14px;border-radius:14px;text-align:center;font-weight:700;z-index:5}
+#chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 6px}
+#chips button{white-space:nowrap;min-height:52px;border-radius:26px;font-weight:700}
+#chips button.on{background:var(--pri);color:var(--onpri);border-color:var(--pri)}
+.sm{font-size:18px;min-height:48px;margin:0;flex:1 1 100%}
+[hidden]{display:none!important}
+</style></head><body>
+<main>
+<section id="v">
+  <button id="mic">🎤 Tocá y hablá</button>
+  <div id="heard"></div>
+  <input id="q" placeholder="O escribí el nombre acá" autocomplete="off">
+  <div id="chips"></div>
+  <div id="res"></div>
+  <h2>Venta actual</h2>
+  <div id="tk"></div>
+</section>
+<section id="h" hidden></section>
+<section id="p" hidden>
+  <h2>Cargar artículo</h2>
+  <input id="pn" placeholder="Nombre (ej: Alfajor)" autocomplete="off">
+  <input id="pp" type="number" inputmode="decimal" min="0" placeholder="Precio">
+  <input id="pc" list="cats" placeholder="Categoría (ej: cigarros, gaseosas)" autocomplete="off">
+  <input id="pa" placeholder="Cómo lo dice ella (opcional, separá con comas)" autocomplete="off">
+  <datalist id="cats"></datalist>
+  <button id="psave" class="ok" style="width:100%">Guardar artículo</button>
+  <h2>Mis artículos</h2>
+  <input id="pf" placeholder="Buscar en la lista" autocomplete="off">
+  <div id="pl"></div>
+  <h2>Copia de seguridad</h2>
+  <p class="mut">Guardá este texto en un lugar seguro (por ejemplo, mandándotelo por WhatsApp). Para recuperar todo, pegalo acá y tocá “Cargar”.</p>
+  <textarea id="bk"></textarea>
+  <button id="bmake" style="width:100%">Preparar copia</button>
+  <button id="bload" style="width:100%;margin-top:8px">Cargar desde el cuadro</button>
+</section>
+</main>
+<div id="bar"><div><small>Total de la venta</small><b id="tot">$0</b></div><button id="close" class="ok">Cerrar venta</button></div>
+<nav><button data-v="v">Vender</button><button data-v="h">Historial</button><button data-v="p">Precios</button></nav>
+<div id="toast" hidden></div>
+<script>
+const $=s=>document.querySelector(s);
+let S={items:[],cur:[],sales:[]},armed=null,tt;
+try{Object.assign(S,JSON.parse(localStorage.getItem('kiosco')||'{}'))}catch(e){}
+const save=()=>{try{localStorage.setItem('kiosco',JSON.stringify(S))}catch(e){}};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const $$=n=>'$'+Number(n).toLocaleString('es-AR',{maximumFractionDigits:2});
+const norm=s=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+function lev(a,b){const d=[];for(let i=0;i<=a.length;i++)d[i]=[i];for(let j=1;j<=b.length;j++)d[0][j]=j;for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]==b[j-1]?0:1));return d[a.length][b.length]}
+function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,1800)}
+function sure(key,fn,btn,txt){if(armed===key){armed=null;fn()}else{armed=key;btn.textContent='¿Seguro? Tocá de nuevo';setTimeout(()=>{if(armed===key){armed=null;btn.textContent=txt}},3000)}}
+
+const ph=s=>s.replace(/ph/g,'f').replace(/ck|qu|k/g,'k').replace(/c(?=[ei])/g,'s').replace(/c/g,'k').replace(/z/g,'s').replace(/ll|y/g,'i').replace(/w/g,'u').replace(/v/g,'b').replace(/h/g,'').replace(/(.)\1+/g,'$1');
+const sk=s=>ph(s).replace(/[aeiou ]/g,'');
+function sc1(q,c){let tot=0,ok=true;const ct=c.split(' ');
+  for(const x of q.split(' ')){let b=0;
+    for(const y of ct){
+      if(y.startsWith(x)||(x.length>2&&y.includes(x)))b=1;
+      else{const px=ph(x),py=ph(y);
+        if(px&&(px==py||(px.length>3&&lev(px,py)<=1)))b=Math.max(b,.8);
+        else if(x.length>3&&lev(x,y)<=(x.length>5?2:1))b=Math.max(b,.6);
+        else{const k=sk(x);if(k.length>=3&&k==sk(y))b=Math.max(b,.6)}}}
+    if(!b){ok=false;break}tot+=b}
+  if(ok)return tot;
+  const kq=sk(q),kc=sk(c);return kq.length>=3&&(kq==kc||(kq.length>=4&&kc.includes(kq)))?.7:0}
+function find(q){q=norm(q);if(!q)return[];
+  return S.items.map(it=>{let s=Math.max(sc1(q,norm(it.n)),...(it.a||[]).map(a=>sc1(q,norm(a))));
+    if(!s&&it.c&&sc1(q,norm(it.c))>=1)s=.5;return{it,s}}).filter(r=>r.s>0).sort((a,b)=>b.s-a.s||a.it.n.localeCompare(b.it.n)).slice(0,12).map(r=>r.it)}
+const cardsOf=m=>m.map(it=>`<button class="card" data-id="${it.id}"><span>${esc(it.n)}<br><span class="mut">Tocá para agregar</span></span><b>${$$(it.p)}</b></button>`).join('');
+
+function search(){const q=$('#q').value.trim(),r=$('#res');if(!q){r.innerHTML=cat?cardsOf(S.items.filter(i=>i.c==cat).sort((a,b)=>a.n.localeCompare(b.n))):'';return}
+  const m=find(q);
+  r.innerHTML=m.length?cardsOf(m)
+   :`<p>No encontré “${esc(q)}”.</p><button id="newit" class="card"><span>Cargar este artículo con su precio</span></button>`}
+let cat='',pend=null;
+$('#q').oninput=search;
+function drawChips(){const cs=[...new Set(S.items.map(i=>i.c).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  if(cat&&!cs.includes(cat))cat='';
+  $('#chips').innerHTML=cs.map(c=>`<button data-c="${esc(c)}"${c==cat?' class="on"':''}>${esc(c)}</button>`).join('');
+  $('#cats').innerHTML=cs.map(c=>`<option value="${esc(c)}">`).join('')}
+$('#chips').onclick=e=>{const b=e.target.closest('button');if(!b)return;cat=cat==b.dataset.c?'':b.dataset.c;$('#q').value='';$('#heard').textContent='';drawChips();search()};
+$('#res').onclick=e=>{const b=e.target.closest('button');if(!b)return;
+  if(b.id=='newit'){$('#pn').value=$('#q').value.trim();go('p');$('#pp').focus();return}
+  const it=S.items.find(i=>i.id==b.dataset.id);if(!it)return;
+  const l=S.cur.find(x=>x.id==it.id);if(l)l.q++;else S.cur.push({id:it.id,n:it.n,p:it.p,q:1});
+  let ex='';if(pend){const k=norm(pend);if(k&&norm(it.n)!=k&&!(it.a||[]).some(a=>norm(a)==k)){(it.a??=[]).push(pend);ex=' · Aprendí “'+pend+'”'}pend=null}
+  save();drawTk();toast('Agregado: '+it.n+' '+$$(it.p)+ex);$('#q').value='';$('#heard').textContent='';search()};
+
+const tot=()=>S.cur.reduce((a,l)=>a+l.p*l.q,0);
+function drawTk(){
+  $('#tk').innerHTML=S.cur.length?S.cur.map((l,i)=>`<div class="row"><span>${l.q} × ${esc(l.n)}</span><b>${$$(l.p*l.q)}</b><button data-i="${i}" aria-label="Quitar uno">−</button></div>`).join('')+'<button id="clr" class="bad" style="margin-top:14px">Borrar toda la venta</button>':'<p class="mut">Todavía no agregaste nada.</p>';
+  $('#tot').textContent=$$(tot());$('#close').disabled=!S.cur.length}
+$('#tk').onclick=e=>{const b=e.target.closest('button');if(!b)return;
+  if(b.id=='clr')return sure('clr',()=>{S.cur=[];save();drawTk()},b,'Borrar toda la venta');
+  const l=S.cur[b.dataset.i];if(!l)return;if(--l.q<1)S.cur.splice(b.dataset.i,1);save();drawTk()};
+$('#close').onclick=()=>{if(!S.cur.length)return;const total=tot();
+  S.sales.push({t:Date.now(),items:S.cur.map(({n,p,q})=>({n,p,q})),total});S.cur=[];save();drawTk();toast('Venta guardada: '+$$(total))};
+
+const dk=t=>{const d=new Date(t);return d.getFullYear()+'-'+d.getMonth()+'-'+d.getDate()};
+function drawH(){
+  const days={};S.sales.forEach(s=>{(days[dk(s.t)]??=[]).push(s)});
+  const today=days[dk(Date.now())]||[],sum=a=>a.reduce((x,s)=>x+s.total,0);
+  const cnt={};S.sales.forEach(s=>s.items.forEach(i=>cnt[i.n]=(cnt[i.n]||0)+i.q));
+  const top=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const tm=t=>new Date(t).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+  const dl=t=>new Date(t).toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'});
+  let h=`<h2>Hoy</h2><p style="font-size:40px;margin:0"><b>${$$(sum(today))}</b></p><p class="mut">${today.length} ventas</p>`;
+  h+=today.slice().reverse().map(s=>`<div class="row"><span><span class="mut">${tm(s.t)}</span><br>${s.items.map(i=>i.q+' × '+esc(i.n)).join(', ')}</span><b>${$$(s.total)}</b></div>`).join('');
+  h+='<h2>Lo más vendido</h2>'+(top.length?top.map(([n,q])=>`<div class="row"><span>${esc(n)}</span><b>${q}</b></div>`).join(''):'<p class="mut">Todavía no hay ventas.</p>');
+  const prev=Object.keys(days).filter(k=>k!==dk(Date.now())).sort((a,b)=>days[b][0].t-days[a][0].t).slice(0,30);
+  if(prev.length)h+='<h2>Días anteriores</h2>'+prev.map(k=>`<div class="row"><span>${dl(days[k][0].t)}<br><span class="mut">${days[k].length} ventas</span></span><b>${$$(sum(days[k]))}</b></div>`).join('');
+  $('#h').innerHTML=h}
+
+function drawP(){const f=norm($('#pf').value);
+  const l=S.items.slice().sort((a,b)=>a.n.localeCompare(b.n)).filter(i=>!f||norm(i.n).includes(f));
+  $('#pl').innerHTML=l.length?l.map(i=>`<div class="row" style="flex-wrap:wrap"><span>${esc(i.n)}</span><input type="number" inputmode="decimal" min="0" value="${i.p}" data-id="${i.id}" data-f="p" style="width:120px;margin:0"><button class="bad" data-del="${i.id}">Borrar</button><input class="sm" list="cats" placeholder="Categoría" value="${esc(i.c||'')}" data-id="${i.id}" data-f="c"><input class="sm" placeholder="Cómo lo dice (separá con comas)" value="${esc((i.a||[]).join(', '))}" data-id="${i.id}" data-f="a"></div>`).join(''):'<p class="mut">No hay artículos. Cargá el primero arriba.</p>'}
+$('#pf').oninput=drawP;
+$('#psave').onclick=()=>{const n=$('#pn').value.trim(),p=parseFloat($('#pp').value);
+  if(!n||isNaN(p)||p<0)return toast('Completá el nombre y el precio');
+  const ex=S.items.find(i=>norm(i.n)==norm(n));
+  const c=$('#pc').value.trim(),a=$('#pa').value.split(',').map(x=>x.trim()).filter(Boolean);
+  if(ex){ex.p=p;if(c)ex.c=c;if(a.length)ex.a=[...new Set([...(ex.a||[]),...a])]}else S.items.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),n,p,c,a});
+  save();$('#pn').value='';$('#pp').value='';$('#pa').value='';drawP();drawChips();toast('Guardado: '+n+' '+$$(p));$('#pn').focus()};
+$('#pl').onchange=e=>{const t=e.target,i=S.items.find(x=>x.id==t.dataset.id);if(!i)return;const f=t.dataset.f;
+  if(f=='p'){const p=parseFloat(t.value);if(isNaN(p))return;i.p=p}
+  else if(f=='c')i.c=t.value.trim();
+  else i.a=t.value.split(',').map(x=>x.trim()).filter(Boolean);
+  save();toast('Guardado');if(f=='c')drawChips()};
+$('#pl').onclick=e=>{const b=e.target.closest('button[data-del]');if(!b)return;
+  sure(b.dataset.del,()=>{S.items=S.items.filter(i=>i.id!=b.dataset.del);save();drawP();drawChips()},b,'Borrar')};
+$('#bmake').onclick=()=>{const t=$('#bk');t.value=JSON.stringify({items:S.items,sales:S.sales});t.select();try{navigator.clipboard.writeText(t.value)}catch(e){}toast('Copia lista: copiala del cuadro')};
+$('#bload').onclick=function(){try{const d=JSON.parse($('#bk').value);if(!Array.isArray(d.items))throw 0;
+  sure('bl',()=>{S.items=d.items;S.sales=d.sales||[];S.cur=[];save();drawP();drawTk();drawChips();toast('Copia cargada')},this,'Cargar desde el cuadro')}catch(e){toast('El texto de la copia no es válido')}};
+
+function go(v){['v','h','p'].forEach(k=>$('#'+k).hidden=k!=v);
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v==v));
+  $('#bar').hidden=v!='v';if(v=='h')drawH();if(v=='p')drawP();window.scrollTo(0,0)}
+document.querySelector('nav').onclick=e=>{const b=e.target.closest('button');if(b)go(b.dataset.v)};
+
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+$('#mic').onclick=()=>{
+  if(!SR){$('#heard').textContent='Este navegador no tiene búsqueda por voz. Escribí el nombre.';$('#q').focus();return}
+  const r=new SR(),b=$('#mic');r.lang='es-AR';r.maxAlternatives=3;
+  b.classList.add('on');b.textContent='Escuchando… hablá ahora';
+  r.onresult=e=>{const alts=[...e.results[0]].map(a=>a.transcript),t=alts.find(a=>find(a).length)||alts[0];
+    $('#q').value=t;$('#heard').textContent='Escuché: “'+t+'”';pend=find(t).length?null:t;search()};
+  r.onerror=e=>{$('#heard').textContent=e.error=='not-allowed'?'Falta permitir el micrófono en el navegador.':'No te escuché bien. Probá de nuevo o escribí.'};
+  r.onend=()=>{b.classList.remove('on');b.textContent='🎤 Tocá y hablá'};
+  try{r.start()}catch(e){}};
+
+drawTk();drawChips();go('v');
+</script></body></html>
